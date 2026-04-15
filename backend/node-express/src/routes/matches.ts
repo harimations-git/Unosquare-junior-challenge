@@ -31,8 +31,16 @@ const router = Router();
 // ============================================================
 
 router.get('/', (_req, res) => {
-  // TODO: Replace with your implementation
-  res.status(501).json({ error: 'Not implemented yet' });
+
+  const filters : {city?: string; date? :string } = {};
+
+  //Filter the params
+  if (_req.query.city) filters.city = String(_req.query.city);
+  if (_req.query.date) filters.date = String(_req.query.date);
+
+  const matches = MatchModel.getAll(filters);
+  
+  res.status(200).json({ ...matches });
 });
 
 // ============================================================
@@ -47,8 +55,15 @@ router.get('/', (_req, res) => {
 // ============================================================
 
 router.get('/:id', (_req, res) => {
-  // TODO: Replace with your implementation
-  res.status(501).json({ error: 'Not implemented yet' });
+  
+  const {id} = _req.params;
+  const match = MatchModel.getById(id);
+
+  if(!match){
+    return res.status(404).json({ error: "Match not found"})
+  }
+  
+  res.status(200).json({ ...match });
 });
 
 export default router;
