@@ -60,10 +60,70 @@ export class NearestNeighbourStrategy implements RouteStrategy {
   // ============================================================
 
   optimise(matches: MatchWithCity[], originCity?: City): OptimisedRoute {
-    // TODO: Your code here
-    const orderedMatches: MatchWithCity[] = [];
 
-    // TODO: Your code here
+
+    if (!matches || matches.length === 0) {
+      return this.createEmptyRoute();
+    }
+
+    const orderedMatches: MatchWithCity[] = []; //matches to keep
+
+    //Sort matches from earliest to latest using a copy of the original matches array
+    const sortedMatches = [...matches].sort(
+      (a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime() //if negative then 'a' is first
+    );
+
+    //map to group matches by date
+    const matchesByDate = new Map<string, MatchWithCity[]>();
+
+    for (const match of sortedMatches) {
+
+      const date = match.kickoff.split('T')[0];
+
+      if (!matchesByDate.has(date)) {
+        matchesByDate.set(date, []);
+      }
+      //add match to array
+      matchesByDate.get(date)!.push(match);
+    }
+
+    //if user have a starting city, use it, else fall back to first city match
+    let currentCity = originCity ?? sortedMatches[0].city;
+
+    for (const [, dailyMatches] of matchesByDate) {
+      let chosenMatch: MatchWithCity;
+
+      if (dailyMatches.length === 1) {
+        chosenMatch = dailyMatches[0];
+      } else {
+        //if there are multiple matches that day, reduce() gets the nearest one
+        chosenMatch = dailyMatches.reduce((nearest, match) => {
+          //distance to nearest match
+          const nearestMatchDistance = calculateDistance(
+            currentCity.latitude,
+            currentCity.longitude,
+            nearest.city.latitude,
+            nearest.city.longitude
+          );
+
+          //distance to current match
+          const currentMatchDistance = calculateDistance(
+            currentCity.latitude,
+            currentCity.longitude,
+            match.city.latitude,
+            match.city.longitude
+
+          );
+
+          return currentMatchDistance < nearestMatchDistance ? match : nearest;
+        });
+      }
+      //add chosen match to the final route
+      orderedMatches.push(chosenMatch);
+
+      //update current city to be in the chosenMatch's city
+      currentCity = chosenMatch.city;
+    }
 
     const route = this.buildRoute(orderedMatches, originCity);
     this.validateRoute(route, orderedMatches);
@@ -89,7 +149,37 @@ export class NearestNeighbourStrategy implements RouteStrategy {
   // ============================================================
 
   private validateRoute(route: OptimisedRoute, matches: MatchWithCity[]): void {
-    // TODO: Your implementation
+    const warnings: string[] = [];
+
+    //get all countries from the matches & remove duplicates
+    const countriesVisited = [
+      ...new Set(matches.map((match) => match.city.country))
+    ];
+
+    //check which countries were no visited
+    const missingCountries =
+      NearestNeighbourStrategy.REQUIRED_COUNTRIES.filter((country) => !countriesVisited.includes(country));
+
+      if(matches.length < NearestNeighbourStrategy.MINIMUM_MATCHES){
+        //push warning (matches < min matches)
+        warnings.push(
+          `Route only includes ${matches.length} matches. At least ${NearestNeighbourStrategy.MINIMUM_MATCHES} are required.`
+        )
+      }
+
+      if(missingCountries.length > 0){
+        //push warning (required countries not visited)
+        warnings.push(
+          `Route does not visit all required countries. Missing the following: ${missingCountries.join(", ")}.`
+        );
+      }
+
+      //return true if both rules pass
+      route.feasible = matches.length >= NearestNeighbourStrategy.MINIMUM_MATCHES && missingCountries.length === 0;
+
+      route.warnings = warnings;
+      route.countriesVisited = countriesVisited;
+      route.missingCountries = missingCountries;
   }
 
   // ============================================================

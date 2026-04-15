@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as MatchModel from '../models/Match';
 import * as CityModel from '../models/City';
 import { NearestNeighbourStrategy } from '../strategies/NearestNeighbourStrategy';
+import { DateOnlyStrategy } from '../strategies/DateOnlyStrategy';
 // Tip: You can also import DateOnlyStrategy to compare results
 // import { DateOnlyStrategy } from '../strategies/DateOnlyStrategy';
 
@@ -34,8 +35,26 @@ const router = Router();
 // ============================================================
 
 router.post('/optimise', (req, res) => {
-  // TODO: Replace with your implementation
-  res.status(200).json({});
+  const {matchIds, originCityId} = req.body;
+
+  if(!Array.isArray(matchIds) || !originCityId){
+    return res.status(400).json({ error: 'Match and an Origin City are required'});
+  }
+
+  const matchData = MatchModel.getByIds(matchIds);
+  const originCity = CityModel.getById(originCityId);
+
+  console.log(originCity);
+
+  if(!originCity){
+    return res.status(404).json({ error: 'Origin city not found'});
+  }
+  
+  const strategy = new NearestNeighbourStrategy();
+  const optimisedRoute = strategy.optimise(matchData, originCity); 
+  
+  res.status(200).json({...optimisedRoute});
+  
 });
 
 // ============================================================
