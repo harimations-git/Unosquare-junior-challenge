@@ -1,4 +1,5 @@
 $kind: http-request
+name: Optimise Route
 description: |-
   Optimise travel route for selected matches.
 
@@ -13,6 +14,7 @@ body:
   type: text
   content: |-
     {
-        "matchIds": ["match-1", "match-5", "match-12", "match-20"]
-    }
+        "matchIds": ["match-1", "match-5", "match-12", "match-20"],
+        "originCityId": "city-new-york"
+        }
 order: 1000
