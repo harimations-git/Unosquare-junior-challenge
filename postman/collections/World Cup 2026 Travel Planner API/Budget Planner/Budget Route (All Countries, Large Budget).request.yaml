@@ -1,4 +1,5 @@
 $kind: http-request
+name: Budget Route (All Countries, Large Budget)
 description: |-
   Test budget planner with generous budget and many matches.
 
@@ -12,7 +13,7 @@ body:
   content: >-
     {
         "budget": 10000.00,
-        "matchIds": ["match-1", "match-5", "match-9", "match-13", "match-17", "match-21", "match-25", "match-29"],
+        "matchIds": ["match-1", "match-5", "match-9", "match-13", "match-17", "match-21", "match-25", "match-29", "match-48"],
         "originCityId": "city-houston"
     }
 order: 4000

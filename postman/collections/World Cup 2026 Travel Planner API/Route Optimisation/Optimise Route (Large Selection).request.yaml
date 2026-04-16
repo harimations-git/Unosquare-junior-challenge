@@ -1,4 +1,5 @@
 $kind: http-request
+name: Optimise Route (Large Selection)
 description: |-
   Test route optimisation with a larger selection of matches.
 
@@ -11,6 +12,7 @@ body:
   type: text
   content: >-
     {
-        "matchIds": ["match-1", "match-2", "match-3", "match-4", "match-5", "match-6", "match-7", "match-8"]
+        "matchIds": ["match-1", "match-2", "match-3", "match-4", "match-5", "match-6", "match-7", "match-8"],
+        "originCityId": "city-new-york"
     }
 order: 2000
