@@ -83,13 +83,56 @@ export function calculate(
   flightPrices: FlightPrice[],
   originCity: City
 ): BudgetResult {
-  // TODO: Your implementation here
+  
+  //Sort matches by date
+  const sortedMatches = [...matches].sort(
+    (a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
+  );
+
+  //Get countries visited
+  const countriesVisited = [
+    ...new Set(sortedMatches.map((match) => match.city.country)),
+  ];
+
+  //Check which countries haven't been visited
+  const missingCountries = REQUIRED_COUNTRIES.filter(
+    (country) => !countriesVisited.includes(country)
+  );
+
+  //Cost breakdown
+  const ticketsCost = calculateTicketsCost(sortedMatches);
+  const flightsCost = calculateFlightsCost(originCity, sortedMatches, flightPrices);
+  const accommodationCost = calculateAccommodationCost(sortedMatches);
+
+  const costBreakdown = {
+    tickets: ticketsCost,
+    flights: flightsCost,
+    accommodation: accommodationCost,
+    total: ticketsCost + flightsCost + accommodationCost
+  };
+
+  const feasible = missingCountries.length===0 && costBreakdown.total <= budget;
+
+  //If feasible [], else get suggestions
+  const suggestions = feasible 
+    ? [] 
+    : generateSuggestions(
+      missingCountries,
+      costBreakdown.total,
+      budget,
+      sortedMatches,
+    );
+
+  const route = buildRoute(sortedMatches, 'budget-optimised');
+
   return {
-    feasible: false,
-    costBreakdown: { flights: 0, accommodation: 0, tickets: 0, total: 0 },
-    countriesVisited: [],
-    missingCountries: [...REQUIRED_COUNTRIES],
-    suggestions: ['Not implemented yet'],
+    feasible,
+    route,
+    costBreakdown,
+    countriesVisited,
+    missingCountries,
+    minimumBudgetRequired: feasible ? undefined : costBreakdown.total,
+    suggestions,
   };
 }
 

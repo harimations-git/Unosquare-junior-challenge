@@ -1,4 +1,5 @@
 $kind: http-request
+name: Budget Route (Within Budget)
 description: |-
   Plan a budget-constrained trip.
 
@@ -24,7 +25,7 @@ body:
   content: |-
     {
         "budget": 5000.00,
-        "matchIds": ["match-1", "match-7", "match-13", "match-25", "match-37"],
+        "matchIds": ["match-1", "match-7", "match-13", "match-25", "match-48"],
         "originCityId": "city-atlanta"
     }
 order: 1000

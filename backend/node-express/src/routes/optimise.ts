@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import * as MatchModel from '../models/Match';
 import * as CityModel from '../models/City';
+import * as FlightPrice from '../models/FlightPrice';
+import * as CostCalculator from '../utils/CostCalculator'
 import { NearestNeighbourStrategy } from '../strategies/NearestNeighbourStrategy';
-import { DateOnlyStrategy } from '../strategies/DateOnlyStrategy';
+
 // Tip: You can also import DateOnlyStrategy to compare results
 // import { DateOnlyStrategy } from '../strategies/DateOnlyStrategy';
 
@@ -35,10 +37,10 @@ const router = Router();
 // ============================================================
 
 router.post('/optimise', (req, res) => {
-  const {matchIds, originCityId} = req.body;
+  const { matchIds, originCityId } = req.body;
 
-  if(!Array.isArray(matchIds) || !originCityId){
-    return res.status(400).json({ error: 'Match and an Origin City are required'});
+  if (!Array.isArray(matchIds) || !originCityId) {
+    return res.status(400).json({ error: 'Match and an Origin City are required' });
   }
 
   const matchData = MatchModel.getByIds(matchIds);
@@ -46,15 +48,15 @@ router.post('/optimise', (req, res) => {
 
   console.log(originCity);
 
-  if(!originCity){
-    return res.status(404).json({ error: 'Origin city not found'});
+  if (!originCity) {
+    return res.status(404).json({ error: 'Origin city not found' });
   }
-  
+
   const strategy = new NearestNeighbourStrategy();
-  const optimisedRoute = strategy.optimise(matchData, originCity); 
-  
-  res.status(200).json({...optimisedRoute});
-  
+  const optimisedRoute = strategy.optimise(matchData, originCity);
+
+  res.status(200).json({ ...optimisedRoute });
+
 });
 
 // ============================================================
@@ -90,9 +92,35 @@ router.post('/optimise', (req, res) => {
 //
 // ============================================================
 
-router.post('/budget', (req, res) => {
-  // TODO: Replace with your implementation
-  res.status(200).json({});
+router.post('/budget', async (req, res) => {
+  try {
+    const { budget, matchIds, originCityId } = req.body;
+
+    if (budget == null || !Array.isArray(matchIds) || !originCityId) {
+      return res.status(400).json({ error: 'Budget, matchIds and originCityId are required' });
+    }
+
+    const matches = await MatchModel.getByIds(matchIds);
+    const originCity = await CityModel.getById(originCityId);
+    const flightPrices = await FlightPrice.getAll();
+
+    if (!originCity) {
+      return res.status(404).json({ error: 'Origin city not found' });
+    }
+
+    const budgetResult = CostCalculator.calculate(
+      matches,
+      budget,
+      originCityId,
+      flightPrices,
+      originCity
+    );
+
+    res.status(200).json(budgetResult );
+  } catch (error) {
+    console.error('Budget calculation error: ', error);
+    return res.status(500).json({ error: 'Failed to calculate budget' })
+  }
 });
 
 // ============================================================
