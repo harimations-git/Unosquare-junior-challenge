@@ -4,6 +4,7 @@ import * as CityModel from '../models/City';
 import * as FlightPrice from '../models/FlightPrice';
 import * as CostCalculator from '../utils/CostCalculator'
 import { NearestNeighbourStrategy } from '../strategies/NearestNeighbourStrategy';
+import { findBestValue } from '../bonus/BestValueFinder';
 
 // Tip: You can also import DateOnlyStrategy to compare results
 // import { DateOnlyStrategy } from '../strategies/DateOnlyStrategy';
@@ -92,7 +93,7 @@ router.post('/optimise', (req, res) => {
 //
 // ============================================================
 
-router.post('/budget', async (req, res) => {
+router.post('/budget', (req, res) => {
   try {
     const { budget, matchIds, originCityId } = req.body;
 
@@ -100,9 +101,9 @@ router.post('/budget', async (req, res) => {
       return res.status(400).json({ error: 'Budget, matchIds and originCityId are required' });
     }
 
-    const matches = await MatchModel.getByIds(matchIds);
-    const originCity = await CityModel.getById(originCityId);
-    const flightPrices = await FlightPrice.getAll();
+    const matches = MatchModel.getByIds(matchIds);
+    const originCity = CityModel.getById(originCityId);
+    const flightPrices = FlightPrice.getAll();
 
     if (!originCity) {
       return res.status(404).json({ error: 'Origin city not found' });
@@ -116,7 +117,7 @@ router.post('/budget', async (req, res) => {
       originCity
     );
 
-    res.status(200).json(budgetResult );
+    res.status(200).json(budgetResult);
   } catch (error) {
     console.error('Budget calculation error: ', error);
     return res.status(500).json({ error: 'Failed to calculate budget' })
@@ -149,7 +150,35 @@ router.post('/budget', async (req, res) => {
 
 router.post('/best-value', (req, res) => {
   // TODO: Replace with your implementation (BONUS)
-  res.status(200).json({});
+  try {
+    const { budget, originCityId } = req.body;
+
+    if (budget == null || !originCityId) {
+      return res.status(400).json({ error: 'Budget and originCityId are required' });
+    }
+
+    const matches = MatchModel.getAll();
+    const originCity = CityModel.getById(originCityId);
+
+    if (!originCity) {
+      return res.status(404).json({ error: 'Origin city not found' });
+    }
+
+    const flightPrices = FlightPrice.getAll();
+
+    const bestValue = findBestValue(
+      matches,
+      budget,
+      originCityId,
+      flightPrices,
+      originCity,
+    )
+
+    res.status(200).json(bestValue);
+  } catch (error) {
+    console.error('Best Value calculation error: ', error);
+    return res.status(500).json({ error: 'Failed to calculate budget' })
+  }
 });
 
 export default router;

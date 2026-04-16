@@ -64,8 +64,71 @@ export function findBestValue(
   flightPrices: FlightPrice[],
   originCity: City
 ): BestValueResult {
-  // TODO: Implement this function
-  return buildErrorResult('Not implemented yet');
+
+  if (allMatches.length === 0){
+    return buildErrorResult('No matches found')
+  }
+
+  //track closest options if nothing fits the budget
+  let closestCombination: MatchWithCity[] | null = null;
+  let closestCost = Number.POSITIVE_INFINITY;
+
+  //try to find the biggest valid combination
+  for(let targetSize = allMatches.length; targetSize >= MINIMUM_MATCHES; targetSize--){
+    const combinations = generateValidCombinations(allMatches, targetSize);
+
+    if(combinations.length === 0){
+      continue;
+    }
+
+    let bestWithinBudget: MatchWithCity[] | null = null;
+    let bestWithinBudgetCost = Number.POSITIVE_INFINITY;
+
+    for(const combination of combinations){
+      const totalCost = calculateTotalCost(combination, originCity, flightPrices);
+
+      //track closest option overall if nothing fits
+      if(totalCost < closestCost){
+        closestCost = totalCost;
+        closestCombination = combination;
+      }
+
+      //track cheapest combo that stays in budget
+      if(totalCost <= budget && totalCost < bestWithinBudgetCost){
+        bestWithinBudgetCost = totalCost;
+        bestWithinBudget = combination;
+      }
+    }
+
+    //if this is a valid combination, return now
+    //because this is the best result possible
+    if(bestWithinBudget){
+      return buildResult(
+        bestWithinBudget,
+        bestWithinBudgetCost,
+        true, //withinBudget?
+        budget,
+        originCity,
+        flightPrices
+      );
+    }
+  }
+
+  //if nothing fits, return the closest option
+  if(closestCombination){
+    return buildResult(
+      closestCombination,
+      closestCost,
+      false,
+      budget,
+      originCity,
+      flightPrices
+    )
+  }
+
+  return buildErrorResult(
+    `No valid combination found with at least ${MINIMUM_MATCHES} matches across ${REQUIRED_COUNTRIES.join(', ')}`
+  )
 }
 
 // ============================================================
