@@ -149,12 +149,42 @@ function RouteMap({ route, originCity }: RouteMapProps) {
                     - <span className="popup-match-number"> for stop number
                     - <span className="popup-match-date"> for the date
               */}
+              {stops.map((stop) => {
+
+                //Get home-team names
+                const homeTeam =
+                  typeof stop.match.homeTeam === 'string'
+                    ? stop.match.homeTeam
+                    : stop.match.homeTeam.name;
+
+                //Get away-team names
+                const awayTeam =
+                  typeof stop.match.awayTeam === 'string'
+                    ? stop.match.awayTeam
+                    : stop.match.awayTeam.name;
+
+                //format date e.g., 11 Jun 2026
+                const formattedDate = new Date(stop.match.kickoff).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+                });
+
+                return (
+                  <div key={stop.match.id} className="popup-match">
+                    <span className="popup-match-number">Stop {stop.stopNumber}</span>
+                    <div>{homeTeam} vs {awayTeam}</div>
+                    <span className="popup-match-date">{formattedDate}</span>
+                  </div>
+                );
+              })}
+
             </Popup>
           </Marker>
         );
       })}
       <Polyline positions={positions} color="#e94560" weight={3} />
-    </MapContainer>
+    </MapContainer >
   );
 }
 

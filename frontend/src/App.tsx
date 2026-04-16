@@ -337,8 +337,8 @@ function App() {
                       {!optimisedRoute
                         ? 'Plan your route first'
                         : !isFullyFeasible
-                        ? 'Fix route validation issues first'
-                        : 'Select a starting city above'}
+                          ? 'Fix route validation issues first'
+                          : 'Select a starting city above'}
                     </p>
                   )}
                 </>
