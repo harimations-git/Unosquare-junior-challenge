@@ -128,6 +128,12 @@ export class NearestNeighbourStrategy implements RouteStrategy {
     const route = this.buildRoute(orderedMatches, originCity);
     this.validateRoute(route, orderedMatches);
     return route;
+
+    /**
+     * Trade offs:
+     * • If there are several matches on one day, it picks the one closest to the current city,
+     *   which is fast and simple but does not guarantee the absolute best route.
+     */
   }
 
   // ============================================================
@@ -160,26 +166,32 @@ export class NearestNeighbourStrategy implements RouteStrategy {
     const missingCountries =
       NearestNeighbourStrategy.REQUIRED_COUNTRIES.filter((country) => !countriesVisited.includes(country));
 
-      if(matches.length < NearestNeighbourStrategy.MINIMUM_MATCHES){
-        //push warning (matches < min matches)
-        warnings.push(
-          `Route only includes ${matches.length} matches. At least ${NearestNeighbourStrategy.MINIMUM_MATCHES} are required.`
-        )
-      }
+    if (matches.length < NearestNeighbourStrategy.MINIMUM_MATCHES) {
+      //push warning (matches < min matches)
+      warnings.push(
+        `Route only includes ${matches.length} matches. At least ${NearestNeighbourStrategy.MINIMUM_MATCHES} are required.`
+      )
+    }
 
-      if(missingCountries.length > 0){
-        //push warning (required countries not visited)
-        warnings.push(
-          `Route does not visit all required countries. Missing the following: ${missingCountries.join(", ")}.`
-        );
-      }
+    if (missingCountries.length > 0) {
+      //push warning (required countries not visited)
+      warnings.push(
+        `Route does not visit all required countries. Missing the following: ${missingCountries.join(", ")}.`
+      );
+    }
 
-      //return true if both rules pass
-      route.feasible = matches.length >= NearestNeighbourStrategy.MINIMUM_MATCHES && missingCountries.length === 0;
+    //return true if both rules pass
+    route.feasible = matches.length >= NearestNeighbourStrategy.MINIMUM_MATCHES && missingCountries.length === 0;
 
-      route.warnings = warnings;
-      route.countriesVisited = countriesVisited;
-      route.missingCountries = missingCountries;
+    route.warnings = warnings;
+    route.countriesVisited = countriesVisited;
+    route.missingCountries = missingCountries;
+
+  
+   // Trade offs:
+   // • The warnings[] make invalid routes easy to understand, but does not attempt to improve the route itself
+   // • Feasibility is treated as a binary result, which is simple but not great for detailed evaluation
+   
   }
 
   // ============================================================

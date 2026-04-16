@@ -129,6 +129,9 @@ export function findBestValue(
   return buildErrorResult(
     `No valid combination found with at least ${MINIMUM_MATCHES} matches across ${REQUIRED_COUNTRIES.join(', ')}`
   )
+
+   // Trade offs:
+   // • Early return improves performance, but may skip smaller combinations that are cheaper overall.
 }
 
 // ============================================================

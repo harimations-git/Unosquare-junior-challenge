@@ -146,6 +146,10 @@ describe('RouteMap', () => {
     // Act: Render RouteMap with the route
     // Assert: Verify 3 markers are rendered
 
+    // Note:
+    // RouteMap groups stops by city when rendering markers.
+    // This test uses stops in different cities so the marker count matches the stop count 
+
     render(<RouteMap route={mockRoute} originCity={null} />); //originCity={null} isolates the stop markers
     expect(screen.getAllByTestId('marker')).toHaveLength(3);
   });
