@@ -40,7 +40,7 @@ router.get('/', (_req, res) => {
 
   const matches = MatchModel.getAll(filters);
   
-  res.status(200).json({ ...matches });
+  res.status(200).json(matches);
 });
 
 // ============================================================
@@ -63,7 +63,7 @@ router.get('/:id', (_req, res) => {
     return res.status(404).json({ error: "Match not found"})
   }
   
-  res.status(200).json({ ...match });
+  res.status(200).json(match);
 });
 
 export default router;

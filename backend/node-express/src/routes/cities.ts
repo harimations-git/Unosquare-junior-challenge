@@ -25,7 +25,7 @@ const router = Router();
 
 router.get('/', (_req, res) => {
   const allCities = CityModel.getAll();
-  res.status(200).json({ ...allCities });
+  res.status(200).json(allCities);
 });
 
 export default router;
