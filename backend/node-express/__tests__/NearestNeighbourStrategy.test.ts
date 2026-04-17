@@ -1,6 +1,6 @@
 import { NearestNeighbourStrategy } from '../src/strategies/NearestNeighbourStrategy';
 import { MatchWithCity } from '../src/strategies/RouteStrategy';
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach,} from '@jest/globals';
 
 /**
  * NearestNeighbourStrategyTest — YOUR TASK #4
@@ -125,4 +125,22 @@ describe('NearestNeighbourStrategy', () => {
     expect(result.totalDistance).toBe(0);
     expect(result.stops.length).toBe(1);   
   });
+
+  it('should pick the nearest city when multiple matches are on the same day', () => {
+    // Make two matches occur on the same day so the test can verify
+    // that the nearest city is chosen.
+  const sameDayMatches: MatchWithCity[] = [
+    multipleMatches[0],
+    {
+      ...multipleMatches[1],
+      matchDay: 1,
+      kickoff: '2026-06-11T20:00:00.000Z',
+    },
+  ];
+
+  const result = strategy.optimise(sameDayMatches, toronto);
+
+  expect(result.stops.length).toBe(1);
+  expect(result.stops[0].city.id).toBe(toronto.id);
+});
 });
